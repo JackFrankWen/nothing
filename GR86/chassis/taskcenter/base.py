@@ -1,4 +1,4 @@
-from GR86.chassis.database.mongdb  import mongo
+from GR86.chassis.database.mongdb import mongo
 from GR86.chassis.spider.tushare import Tushare
 
 

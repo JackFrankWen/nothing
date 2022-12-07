@@ -74,4 +74,4 @@ class TushareTask(Task):
 
     def save_stock_list_to_mongodb(self):
         basic = self.t.get_stock_basic()
-        self.stock_list.insert_many(basic.to_dict("records"))
+        self.collection_stock_list.insert_many(basic.to_dict("records"))

@@ -75,7 +75,9 @@ class Tushare(spider):
             "market",
             "list_date",
             "exchange",
-            "delist_date"
+            "list_status",
+            "delist_date",
+            "is_hs",
         ])
 
     def get_daily_basic(self, trade_date):
