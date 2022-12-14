@@ -39,6 +39,7 @@ class Tushare(spider):
         :return:
         """
         code = self.transform(ts_code)
+
         return self.pro.balancesheet(ts_code=code, start_date='20170101', end_date='20221231',
                                      end_type="4",
                                      fields=[

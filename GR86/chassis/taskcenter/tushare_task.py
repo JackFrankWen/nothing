@@ -57,17 +57,29 @@ class TushareTask(Task):
         else:
             return False
 
-    def save_cash_flow_to_mongodb(self, ts_code):
+    def save_cash_flow_to_mongodb(self, sheet):
+        self.collection_cash_flow.insert_many(sheet)
+        logging.info(sheet)
+
+    def get_and_save_cash_flow_to_mongodb(self, ts_code):
         sheet = self.t.get_cash_flow(ts_code=ts_code)
         self.collection_cash_flow.insert_many(sheet.to_dict("records"))
         logging.info(sheet)
 
-    def save_income_statement_to_mongodb(self, ts_code):
+    def save_income_statement_to_mongodb(self, sheet):
+        self.collection_income_statement.insert_many(sheet)
+        logging.info(sheet)
+
+    def get_and_save_income_statement_to_mongodb(self, ts_code):
         sheet = self.t.get_income_statement(ts_code=ts_code)
         self.collection_income_statement.insert_many(sheet.to_dict("records"))
         logging.info(sheet)
 
-    def save_balance_sheet_mongodb(self, ts_code):
+    def save_balance_sheet_mongodb(self, sheet):
+        self.collection_balance_sheet.insert_many(sheet)
+        logging.info(sheet)
+
+    def get_and_save_balance_sheet_mongodb(self, ts_code):
         sheet = self.t.get_balance_sheet(ts_code=ts_code)
         self.collection_balance_sheet.insert_many(sheet.to_dict("records"))
         logging.info(sheet)
