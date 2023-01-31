@@ -84,6 +84,6 @@ class TushareTask(Task):
         self.collection_balance_sheet.insert_many(sheet.to_dict("records"))
         logging.info(sheet)
 
-    def save_stock_list_to_mongodb(self):
+    def get_and_save_stock_list_to_mongodb(self):
         basic = self.t.get_stock_basic()
         self.collection_stock_list.insert_many(basic.to_dict("records"))
