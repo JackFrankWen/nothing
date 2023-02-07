@@ -6,15 +6,14 @@ import logging
 
 import itertools
 
-from GR86.engine.analysis.utils import format_money, get_percent
+from GR86.engine.analysis.utils import get_percent, format_money
 
 template = {
-    'total_revenue':  "一、 营业总收入",
-    'total_cogs': "二、 营业总成本",
-    'operate_profit':  "三、 营业利润",  # 营业总收入—营业总成本+投资收益+公允价值变动收益—资产减值损失—信用减值损失
-    'total_profit': "四、利润总额",
-    "n_income":  "五、净利润",
-
+    'total_assets': "一、资产总计",
+    'total_cur_assets': "流动资产合计",
+    'total_nca': "非流动资产合计",
+    'total_liab': "二、负债合计",
+    'total_hldr_eqy_inc_min_int': "三、 股东权益总计",
 }
 
 row_labels_keys = [new_value for new_value in template.keys()]
@@ -22,21 +21,15 @@ row_labels = [new_value for new_value in template.values()]
 
 
 
-
 def percent_data(obj):
-    return_obj = {
-        'total_revenue': "100%"
-    }
+    return_obj = {}
     for item in row_labels_keys:
-        if item != 'total_revenue':
-            if obj.get(item) is None:
-
-                return_obj[item] = '/'
-            elif math.isnan(obj.get(item)):
-                return_obj[item] = '/'
-
-            else:
-                return_obj[item] = '{:,.2f}%'.format(get_percent(obj, item, "total_revenue"))
+        if obj.get(item) is None:
+            return_obj[item] = '/'
+        elif math.isnan(obj.get(item)):
+            return_obj[item] = '/'
+        else:
+            return_obj[item] = '{:,.2f}%'.format(get_percent(obj, item, "total_assets"))
     return return_obj
 
 
@@ -47,6 +40,7 @@ def load_data(idx_and_item):
         return format_money(item, row_labels_keys)
     else:
         return percent_data(item)
+
 
 
 def get_data_and_col_labels(cursor):
@@ -67,7 +61,6 @@ def get_data_and_col_labels(cursor):
 def get_view(cursor):
     plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 
-
     copy_cursor = list(cursor)
     table_amount = math.ceil(len(copy_cursor) / 5)
 
@@ -75,7 +68,6 @@ def get_view(cursor):
 
     for i in range(table_amount):
         show_data = copy_cursor[i * 5: i * 5 + 5]
-        logging.info(show_data)
         plt.table(cellText=get_data_and_col_labels(show_data).get('data'),
                   colLabels=get_data_and_col_labels(show_data).get('col_label'),
                   rowLabels=row_labels,

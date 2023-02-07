@@ -4,6 +4,7 @@ import math
 
 from GR86.chassis.taskcenter.tushare_task import TushareTask
 from GR86.engine.analysis.isotype.income_statement import get_view, get_percent
+from GR86.engine.analysis.isotype.balance_sheet import get_view as get_view_bal
 
 
 def net_profit_over_ten_percent(obj):
@@ -27,3 +28,4 @@ def run():
     }, "end_type": '4', "end_date":  "20191231"})
 
     get_view(get_data_by_rule(cursor))
+    # get_view_bal(cursor2)
