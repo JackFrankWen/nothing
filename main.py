@@ -1,3 +1,4 @@
+from GR86.chassis.taskcenter.tushare_task import TushareTask
 from GR86.engine.analysis.isotype.isotype import run
 import logging
 logging.getLogger().setLevel(logging.DEBUG)
@@ -6,6 +7,7 @@ logging.getLogger().setLevel(logging.DEBUG)
 def main():
     run()
     # t = TushareTask()
+    # t.get_and_save_stock_list_to_mongodb()
     #
     # f = FinialStatementTask()
     # do_balance_sheet_task()

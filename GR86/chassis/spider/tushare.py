@@ -6,7 +6,7 @@ class Tushare(spider):
     def __init__(self):
         # ts.set_token('18d06f6b9689112d57777972863107f8f53ffde39f7e7d21089cfbd7')
 
-        self.pro = ts.pro_api('546c968a0b21a389e604ec18621a75a693abcb82f8c8699d42ab774f')
+        self.pro = ts.pro_api('18d06f6b9689112d57777972863107f8f53ffde39f7e7d21089cfbd7')
 
     def get_cash_flow(self, ts_code, start_date, end_date):
         """
