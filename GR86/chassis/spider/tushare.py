@@ -52,7 +52,7 @@ class Tushare(spider):
         :return:
         """
         code = self.transform(ts_code)
-        return self.pro.fina_audit(ts_code=code, start_date=start_date, end_date=end_date)
+        return self.pro.query('fina_indicator',ts_code=code, start_date=start_date, end_date=end_date)
 
     def get_main_business_info(self, ts_code):
         """

@@ -19,7 +19,7 @@ class Producer(Tushare, Thread):
         self.fetch_data_queue = fetch_data_queue
         self.save_to_mongo_queue = save_to_mongo_queue
 
-    def get_work_info(self, item):
+    def get_data_by_work_type(self, item):
         start_date = "20170101"
         end_date = "20221229"
         if self.work_type == WorkType.BALANCE_SHEET:
@@ -28,6 +28,10 @@ class Producer(Tushare, Thread):
             data = Tushare.get_income_statement(self, ts_code=item, start_date=start_date, end_date=end_date)
         elif self.work_type == WorkType.CASH_FLOW:
             data = Tushare.get_cash_flow(self, ts_code=item, start_date=start_date, end_date=end_date)
+        elif self.work_type == WorkType.FIN_AUDIT_OPINION:
+            data = Tushare.get_audit_opinion(self, ts_code=item, start_date=start_date, end_date=end_date)
+        elif self.work_type == WorkType.FIN_INDICATORS:
+            data = Tushare.get_financial_indicators(self, ts_code=item, start_date=start_date, end_date=end_date)
         return data
 
     def run(self):
@@ -35,7 +39,7 @@ class Producer(Tushare, Thread):
             try:
                 item = self.fetch_data_queue.get()
                 time.sleep(0.1)
-                data = self.get_work_info(item)
+                data = self.get_data_by_work_type(item)
 
                 logging.info('爬取数据: 获取 股票 %s ， 数据长度 %s' % (item, data.size))
                 save_to_mongo_data = {
@@ -61,25 +65,30 @@ class Consumer(Thread, TushareTask):
         self.fetch_data_queue = fetch_data_queue
         self.save_to_mongo_queue = save_to_mongo_queue
 
-    def start_work(self, item):
+    def start_save_data_t_mongodb(self, item):
         if item.get("work_type") == WorkType.BALANCE_SHEET:
             TushareTask.save_balance_sheet_mongodb(self, sheet=item.get('data').to_dict("records"))
         elif item.get("work_type") == WorkType.INCOME_STATEMENT:
             TushareTask.save_income_statement_to_mongodb(self, sheet=item.get('data').to_dict("records"))
         elif item.get("work_type") == WorkType.CASH_FLOW:
             TushareTask.save_cash_flow_to_mongodb(self, sheet=item.get('data').to_dict("records"))
+        elif item.get("work_type") == WorkType.FIN_AUDIT_OPINION:
+            TushareTask.save_financial_audit_opinion_to_mongodb(self, sheet=item.get('data').to_dict("records"))
+        elif item.get("work_type") == WorkType.FIN_INDICATORS:
+            TushareTask.save_financial_indicators_to_mongodb(self, sheet=item.get('data').to_dict("records"))
+
 
     def run(self):
         while True:
             if self.save_to_mongo_queue.empty():
-                Event().wait(0.5)
+                Event().wait(0.01)
                 if self.fetch_data_queue.empty():
                     logging.info('Consumer notify : no item to consume')
                     break
 
             item = self.save_to_mongo_queue.get()
             if item.get('data').size > 0:
-                self.start_work(item)
+                self.start_save_data_t_mongodb(item)
             logging.info('存入mongodb: 数据长度 %s ， %s' % (item.get('data').size, self.thread_id))
             self.save_to_mongo_queue.task_done()
 
@@ -89,31 +98,36 @@ def do_task():
     fetch_balance_queue = queue.Queue(maxsize=0)
     fetch_cash_flow_queue = queue.Queue(maxsize=0)
     fetch_income_queue = queue.Queue(maxsize=0)
+    fetch_final_audit_opinion = queue.Queue(maxsize=0)
+    fetch_final_indicators = queue.Queue(maxsize=0)
     save_to_mongo_queue = queue.Queue(maxsize=0)
     list_stock = f.init_queue()
     logging.info(list_stock)
     for item in list_stock:
-        fetch_balance_queue.put(item)
-        fetch_cash_flow_queue.put(item)
-        fetch_income_queue.put(item)
+        # fetch_balance_queue.put(item)
+        # fetch_cash_flow_queue.put(item)
+        # fetch_income_queue.put(item)
+        fetch_final_audit_opinion.put(item)
+        fetch_final_indicators.put(item)
 
-    p1 = Producer('Producer-0001', fetch_balance_queue, save_to_mongo_queue, WorkType.BALANCE_SHEET)
-    p2 = Producer('Producer-0002', fetch_cash_flow_queue, save_to_mongo_queue, WorkType.CASH_FLOW)
-    p3 = Producer('Producer-0003', fetch_income_queue, save_to_mongo_queue, WorkType.INCOME_STATEMENT)
-    t1 = Consumer('Consumer-0001', fetch_balance_queue, save_to_mongo_queue)
-    t2 = Consumer('Consumer-0002', fetch_balance_queue, save_to_mongo_queue)
+    # p1 = Producer('Producer-0001', fetch_balance_queue, save_to_mongo_queue, WorkType.BALANCE_SHEET)
+    # p2 = Producer('Producer-0002', fetch_cash_flow_queue, save_to_mongo_queue, WorkType.CASH_FLOW)
+    # p3 = Producer('Producer-0003', fetch_income_queue, save_to_mongo_queue, WorkType.INCOME_STATEMENT)
+    p4 = Producer('Producer-0004', fetch_final_audit_opinion, save_to_mongo_queue, WorkType.FIN_AUDIT_OPINION)
+    p5 = Producer('Producer-0005', fetch_final_indicators, save_to_mongo_queue, WorkType.FIN_INDICATORS)
+    t1 = Consumer('Consumer-0001', fetch_final_audit_opinion, save_to_mongo_queue)
+    t2 = Consumer('Consumer-0002', fetch_final_audit_opinion, save_to_mongo_queue)
     try:
 
-        p1.start()
-        p2.start()
-        p3.start()
+        p4.start()
+        p5.start()
+        # p3.start()
         t1.start()
         t2.start()
         t1.join()
         t2.join()
-        p1.join()
-        p2.join()
-        p3.join()
+        p4.join()
+        p5.join()
     except KeyboardInterrupt:
         sys.exit(1)
 
