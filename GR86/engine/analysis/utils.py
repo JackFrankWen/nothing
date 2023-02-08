@@ -1,3 +1,7 @@
+
+
+
+import logging
 def format_money(obj, income_statement_col):
     """
 
@@ -24,7 +28,3 @@ def get_percent(obj, first, sec):
     """
     return int(obj.get(first)) / int(obj.get(sec)) * 100
 
-def get_col_labels_and_col_keys(tempalte):
-    return {
-
-    }

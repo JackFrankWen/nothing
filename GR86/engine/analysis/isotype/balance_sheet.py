@@ -7,6 +7,7 @@ import logging
 import itertools
 
 from GR86.engine.analysis.utils import get_percent, format_money
+from GR86.engine.analysis.view.table_view import get_tabulate_view
 
 template = {
     'total_assets': "一、资产总计",
@@ -18,8 +19,6 @@ template = {
 
 row_labels_keys = [new_value for new_value in template.keys()]
 row_labels = [new_value for new_value in template.values()]
-
-
 
 def percent_data(obj):
     return_obj = {}
@@ -42,7 +41,6 @@ def load_data(idx_and_item):
         return percent_data(item)
 
 
-
 def get_data_and_col_labels(cursor):
     copy = list(cursor)
     double_list = list(itertools.chain(*zip(copy, copy)))
@@ -50,31 +48,17 @@ def get_data_and_col_labels(cursor):
                  range(len(double_list))]
     data = list(map(load_data, enumerate(double_list)))
     df = pd.DataFrame(data,
+                      index=col_label,
                       columns=row_labels_keys)
     df = df.transpose()
-    return {
-        'data': df.values.tolist(),
-        'col_label': col_label
-    }
+    df = pd.DataFrame(df.values.tolist(),
+                      index=row_labels,
+                      columns=col_label)
+    return df
 
 
 def get_view(cursor):
-    plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 
     copy_cursor = list(cursor)
-    table_amount = math.ceil(len(copy_cursor) / 5)
+    get_tabulate_view(get_data_and_col_labels(copy_cursor),'balance_sheet')
 
-    plt.figure(figsize=(20, 14))
-
-    for i in range(table_amount):
-        show_data = copy_cursor[i * 5: i * 5 + 5]
-        plt.table(cellText=get_data_and_col_labels(show_data).get('data'),
-                  colLabels=get_data_and_col_labels(show_data).get('col_label'),
-                  rowLabels=row_labels,
-                  loc='center',
-                  cellLoc='center',
-                  rowLoc='center')
-        plt.subplot(table_amount, 1, i + 1)
-        plt.axis('off')
-
-    plt.show()
